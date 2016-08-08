@@ -3,7 +3,7 @@ from django.core.exceptions import ObjectDoesNotExist
 from django.http import HttpResponseRedirect, HttpResponse
 from django.contrib.auth import authenticate
 from iVR.models import User, UserProfile, Feed, News, Device, Video, Game
-from iVR.models import FeedLike, FeedComment, NewsComment, DeviceReview, VideoReview, GameReview
+from iVR.models import FeedLike, FeedComment, NewsComment, DeviceReview, VideoReview, GameReview, Follow
 from django.views.decorators.csrf import csrf_exempt
 import json
 
@@ -325,6 +325,35 @@ def device_review(request):
 
     return HttpResponse(json.dumps(context_dict), content_type="application/json")
 
+def device_search(request):
+    context_dict = {}
+
+    searchcontent = request.GET['searchcontent']
+
+    list = []
+    if searchcontent:
+        devices_list = Device.objects.filter(name__icontains=searchcontent)
+
+        for ob in devices_list:
+            dict = {}
+            for attr in [f.name for f in ob._meta.fields]:
+                if attr == 'picture1':
+                    dict[attr] = getattr(ob, attr).url
+                elif attr == 'picture2':
+                    dict[attr] = getattr(ob, attr).url
+                elif attr == 'picture3':
+                    dict[attr] = getattr(ob, attr).url
+                elif attr == 'devicedescription':
+                    pass
+                else:
+                    dict[attr] = getattr(ob, attr)
+            list.append(dict)
+
+    context_dict['devices'] = list
+
+    return HttpResponse(json.dumps(context_dict), content_type="application/json")
+
+
 def games(request):
     games_list = Game.objects.all().order_by('-id')
 
@@ -549,7 +578,7 @@ def video_review(request):
                 context_dict['success'] = 1
             except ObjectDoesNotExist:
                 context_dict['success'] = 0
-                context_dict['error_message'] = 'video not exist.'
+                context_dict['error_message'] = 'Video not exist.'
 
         except ObjectDoesNotExist:
             context_dict['success'] = 0
@@ -586,5 +615,250 @@ def feeds(request):
 
     context_dict = {}
     context_dict['feeds'] = list
+
+    return HttpResponse(json.dumps(context_dict), content_type="application/json")
+
+def feed_detail(request):
+    context_dict = {}
+
+    if request.method == 'GET':
+        feedid = request.GET['feedid']
+
+        try:
+            feed = Feed.objects.get(id=feedid)
+
+            dict = {}
+
+            for attr in [f.name for f in feed._meta.fields]:
+                if attr == 'user':
+                    user = getattr(feed, attr)
+                    userprofile = UserProfile.objects.get(user=user)
+
+                    dict['username'] = user.username
+                    dict['userpicture'] = userprofile.picture.url
+                elif attr == 'picture':
+                    dict[attr] = getattr(feed, attr).url
+                elif attr == 'date':
+                    dict[attr] = getattr(feed, attr).strftime('%Y-%m-%d %H:%M:%S')
+                else:
+                    dict[attr] = getattr(feed, attr)
+
+            context_dict['feed'] = dict
+
+            comment_list = FeedComment.objects.filter(feed=feed).order_by('-id')
+            comments = []
+
+            for ob in comment_list:
+                comment_dict = {}
+
+                username = ob.user.username
+                date = ob.date.strftime('%Y-%m-%d %H:%M:%S')
+                content = ob.content
+
+                picture = ''
+                try:
+                    userProfile = UserProfile.objects.get(user=ob.user)
+                    picture = userProfile.picture.url
+                except ObjectDoesNotExist:
+                    pass
+
+                comment_dict['username'] = username
+                comment_dict['picture'] = picture
+                comment_dict['date'] = date
+                comment_dict['content'] = content
+
+                comments.append(comment_dict)
+
+            context_dict['comments'] = comments
+
+        except ObjectDoesNotExist:
+            pass
+
+    return HttpResponse(json.dumps(context_dict), content_type="application/json")
+
+def feed_comment(request):
+    context_dict = {}
+
+    if request.method == 'GET':
+        username = request.GET.get('username')
+        feedid = request.GET.get('feedid')
+        content = request.GET['content']
+
+        try:
+            user = User.objects.get(username=username)
+
+            try:
+                feed = Feed.objects.get(id=feedid)
+
+                feed.commentsnumber = feed.commentsnumber + 1
+                feed.save()
+
+                feedcomment = FeedComment.objects.create(feed=feed,user=user,content=content)
+
+                context_dict['success'] = 1
+            except ObjectDoesNotExist:
+                context_dict['success'] = 0
+                context_dict['error_message'] = 'Feed not exist.'
+
+        except ObjectDoesNotExist:
+            context_dict['success'] = 0
+            context_dict['error_message'] = 'User not exist.'
+
+    else:
+        context_dict['success'] = 0
+        context_dict['error_message'] = 'Request Error.'
+
+    return HttpResponse(json.dumps(context_dict), content_type="application/json")
+
+def feed_like(request):
+    context_dict = {}
+
+    if request.method == 'GET':
+        username = request.GET.get('username')
+        feedid = request.GET.get('feedid')
+
+        try:
+            user = User.objects.get(username=username)
+
+            try:
+                feed = Feed.objects.get(id=feedid)
+
+                try:
+                    feedlike = FeedLike.objects.get(feed=feed,user=user)
+
+                    context_dict['success'] = 0
+                    context_dict['error_message'] = 'Already liked'
+                except ObjectDoesNotExist:
+                    feed.likesnumber = feed.likesnumber + 1
+                    feed.save()
+
+                    feedlike = FeedLike.objects.create(feed=feed,user=user)
+
+                    context_dict['success'] = 1
+            except ObjectDoesNotExist:
+                context_dict['success'] = 0
+                context_dict['error_message'] = 'Feed not exist.'
+
+        except ObjectDoesNotExist:
+            context_dict['success'] = 0
+            context_dict['error_message'] = 'User not exist.'
+
+    else:
+        context_dict['success'] = 0
+        context_dict['error_message'] = 'Request Error.'
+
+    return HttpResponse(json.dumps(context_dict), content_type="application/json")
+
+def follow(request):
+    context_dict = {}
+
+    if request.method == 'GET':
+        username = request.GET.get('username')
+        followedusername = request.GET.get('followedusername')
+
+        try:
+            user = User.objects.get(username=username)
+
+            try:
+                followeduser = User.objects.get(username=followedusername)
+
+                try:
+                    follow = Follow.objects.get(user=user,followeduser=followeduser)
+
+                    context_dict['success'] = 0
+                    context_dict['error_message'] = 'Already followed'
+                except ObjectDoesNotExist:
+                    follow = Follow.objects.create(user=user,followeduser=followeduser)
+
+                    context_dict['success'] = 1
+            except ObjectDoesNotExist:
+                context_dict['success'] = 0
+                context_dict['error_message'] = 'Followed user not exist.'
+
+        except ObjectDoesNotExist:
+            context_dict['success'] = 0
+            context_dict['error_message'] = 'User not exist.'
+
+    else:
+        context_dict['success'] = 0
+        context_dict['error_message'] = 'Request Error.'
+
+    return HttpResponse(json.dumps(context_dict), content_type="application/json")
+
+def followings(request):
+    context_dict = {}
+
+    if request.method == 'GET':
+        username = request.GET.get('username')
+
+        try:
+            user = User.objects.get(username=username)
+
+            following_list = Follow.objects.filter(user=user).order_by('-id')
+
+            list = []
+
+            for ob in following_list:
+                following_dict = {}
+
+                username = ob.followeduser.username
+                date = ob.date.strftime('%Y-%m-%d %H:%M:%S')
+
+                picture = ''
+                try:
+                    userProfile = UserProfile.objects.get(user=ob.followeduser)
+                    picture = userProfile.picture.url
+                except ObjectDoesNotExist:
+                    pass
+
+                following_dict['username'] = username
+                following_dict['picture'] = picture
+                following_dict['date'] = date
+
+                list.append(following_dict)
+
+            context_dict['followings'] = list
+
+        except ObjectDoesNotExist:
+            pass
+
+    return HttpResponse(json.dumps(context_dict), content_type="application/json")
+
+def followers(request):
+    context_dict = {}
+
+    if request.method == 'GET':
+        username = request.GET.get('username')
+
+        try:
+            user = User.objects.get(username=username)
+
+            follower_list = Follow.objects.filter(followeduser=user).order_by('-id')
+
+            list = []
+
+            for ob in follower_list:
+                follower_dict = {}
+
+                username = ob.user.username
+                date = ob.date.strftime('%Y-%m-%d %H:%M:%S')
+
+                picture = ''
+                try:
+                    userProfile = UserProfile.objects.get(user=ob.user)
+                    picture = userProfile.picture.url
+                except ObjectDoesNotExist:
+                    pass
+
+                follower_dict['username'] = username
+                follower_dict['picture'] = picture
+                follower_dict['date'] = date
+
+                list.append(follower_dict)
+
+            context_dict['followers'] = list
+
+        except ObjectDoesNotExist:
+            pass
 
     return HttpResponse(json.dumps(context_dict), content_type="application/json")
