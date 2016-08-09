@@ -618,6 +618,48 @@ def feeds(request):
 
     return HttpResponse(json.dumps(context_dict), content_type="application/json")
 
+def feeds_following(request):
+    context_dict = {}
+
+    if request.method == 'GET':
+        username = request.GET['username']
+
+        try:
+            user = User.objects.get(username=username)
+            following_list = Follow.objects.filter(user=user)
+
+            followinguser_list = []
+            for ob in following_list:
+                followinguser_list.append(ob.followeduser)
+
+            feeds_list = Feed.objects.filter(user__in=followinguser_list).order_by('-id')
+
+            list = []
+
+            for ob in feeds_list:
+                dict = {}
+                for attr in [f.name for f in ob._meta.fields]:
+                    if attr == 'user':
+                        user = getattr(ob, attr)
+                        userprofile = UserProfile.objects.get(user=user)
+
+                        dict['username'] = user.username
+                        dict['userpicture'] = userprofile.picture.url
+                    elif attr == 'picture':
+                        dict[attr] = getattr(ob, attr).url
+                    elif attr == 'date':
+                        dict[attr] = getattr(ob, attr).strftime('%Y-%m-%d %H:%M:%S')
+                    else:
+                        dict[attr] = getattr(ob, attr)
+                list.append(dict)
+
+            context_dict['feeds'] = list
+
+        except ObjectDoesNotExist:
+            pass
+
+    return HttpResponse(json.dumps(context_dict), content_type="application/json")
+
 def feed_detail(request):
     context_dict = {}
 

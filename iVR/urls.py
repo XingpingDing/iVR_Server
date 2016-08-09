@@ -24,6 +24,7 @@ urlpatterns = [
     url(r'^video_review/',views.video_review,name='video_comment'),
 
     url(r'^feeds/',views.feeds,name='feeds'),
+    url(r'^feeds_following/',views.feeds_following,name='feeds_following'),
     url(r'^feed_detail/',views.feed_detail,name='feed_detail'),
     url(r'^feed_comment/',views.feed_comment,name='feed_comment'),
     url(r'^feed_like/',views.feed_like,name='feed_like'),
