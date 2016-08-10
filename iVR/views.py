@@ -84,11 +84,15 @@ def user_detail(request):
             userProfile = UserProfile.objects.get(user=user)
 
             feed_list = Feed.objects.filter(user=user).order_by('-id')
+            following_list = Follow.objects.filter(user=user).order_by('-id')
+            follower_list = Follow.objects.filter(followeduser=user).order_by('-id')
 
             user_dict = {}
-            user_dict['username'] =getattr(user, 'username')
+            user_dict['username'] = getattr(user, 'username')
             user_dict['picture'] = getattr(userProfile, 'picture').url
             user_dict['feedsnumber'] = len(feed_list)
+            user_dict['followingnumber'] = len(following_list)
+            user_dict['followersnumber'] = len(follower_list)
 
             context_dict['user'] = user_dict
 

@@ -8,8 +8,6 @@ import json
 class UserProfile(models.Model):
     user = models.OneToOneField(User)
     picture = models.ImageField(upload_to='static/profile_images', blank=True, default='static/profile_images/ivr.png')
-    followingnumber = models.IntegerField(default=0)
-    followsnumber = models.IntegerField(default=0)
 
     def __unicode__(self):
         return self.user.username
