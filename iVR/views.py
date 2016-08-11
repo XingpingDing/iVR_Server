@@ -795,12 +795,13 @@ def feed_like(request):
 
     return HttpResponse(json.dumps(context_dict), content_type="application/json")
 
+@csrf_exempt
 def follow(request):
     context_dict = {}
 
-    if request.method == 'GET':
-        username = request.GET.get('username')
-        followedusername = request.GET.get('followedusername')
+    if request.method == 'POST':
+        username = request.POST.get('username')
+        followedusername = request.POST.get('followedusername')
 
         try:
             user = User.objects.get(username=username)
