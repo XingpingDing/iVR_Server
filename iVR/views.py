@@ -848,7 +848,6 @@ def followings(request):
                 following_dict = {}
 
                 username = ob.followeduser.username
-                date = ob.date.strftime('%Y-%m-%d %H:%M:%S')
 
                 picture = ''
                 try:
@@ -859,7 +858,6 @@ def followings(request):
 
                 following_dict['username'] = username
                 following_dict['picture'] = picture
-                following_dict['date'] = date
 
                 list.append(following_dict)
 
@@ -887,7 +885,6 @@ def followers(request):
                 follower_dict = {}
 
                 username = ob.user.username
-                date = ob.date.strftime('%Y-%m-%d %H:%M:%S')
 
                 picture = ''
                 try:
@@ -898,7 +895,6 @@ def followers(request):
 
                 follower_dict['username'] = username
                 follower_dict['picture'] = picture
-                follower_dict['date'] = date
 
                 list.append(follower_dict)
 
