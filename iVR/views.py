@@ -177,13 +177,14 @@ def news_detail(request):
 
     return HttpResponse(json.dumps(context_dict), content_type="application/json")
 
+@csrf_exempt
 def news_comment(request):
     context_dict = {}
 
-    if request.method == 'GET':
-        username = request.GET.get('username')
-        newsid = request.GET.get('newsid')
-        content = request.GET['content']
+    if request.method == 'POST':
+        username = request.POST.get('username')
+        newsid = request.POST.get('newsid')
+        content = request.POST.get('content')
 
         try:
             user = User.objects.get(username=username)
@@ -293,14 +294,15 @@ def device_detail(request):
 
     return HttpResponse(json.dumps(context_dict), content_type="application/json")
 
+@csrf_exempt
 def device_review(request):
     context_dict = {}
 
-    if request.method == 'GET':
-        username = request.GET.get('username')
-        deviceid = request.GET.get('deviceid')
-        score = (int)(request.GET.get('score'))
-        content = request.GET['content']
+    if request.method == 'POST':
+        username = request.POST.get('username')
+        deviceid = request.POST.get('deviceid')
+        score = (int)(request.POST.get('score'))
+        content = request.POST.get('content')
 
         try:
             user = User.objects.get(username=username)
@@ -356,7 +358,6 @@ def device_search(request):
     context_dict['devices'] = list
 
     return HttpResponse(json.dumps(context_dict), content_type="application/json")
-
 
 def games(request):
     games_list = Game.objects.all().order_by('-id')
@@ -440,14 +441,15 @@ def game_detail(request):
 
     return HttpResponse(json.dumps(context_dict), content_type="application/json")
 
+@csrf_exempt
 def game_review(request):
     context_dict = {}
 
-    if request.method == 'GET':
-        username = request.GET.get('username')
-        gameid = request.GET.get('gameid')
-        score = (int)(request.GET.get('score'))
-        content = request.GET['content']
+    if request.method == 'POST':
+        username = request.POST.get('username')
+        gameid = request.POST.get('gameid')
+        score = (int)(request.POST.get('score'))
+        content = request.POST.get('content')
 
         try:
             user = User.objects.get(username=username)
@@ -558,14 +560,15 @@ def video_detail(request):
 
     return HttpResponse(json.dumps(context_dict), content_type="application/json")
 
+@csrf_exempt
 def video_review(request):
     context_dict = {}
 
-    if request.method == 'GET':
-        username = request.GET.get('username')
-        videoid = request.GET.get('videoid')
-        score = (int)(request.GET.get('score'))
-        content = request.GET['content']
+    if request.method == 'POST':
+        username = request.POST.get('username')
+        videoid = request.POST.get('videoid')
+        score = (int)(request.POST.get('score'))
+        content = request.POST.get('content')
 
         try:
             user = User.objects.get(username=username)
@@ -722,13 +725,14 @@ def feed_detail(request):
 
     return HttpResponse(json.dumps(context_dict), content_type="application/json")
 
+@csrf_exempt
 def feed_comment(request):
     context_dict = {}
 
-    if request.method == 'GET':
-        username = request.GET.get('username')
-        feedid = request.GET.get('feedid')
-        content = request.GET['content']
+    if request.method == 'POST':
+        username = request.POST.get('username')
+        feedid = request.POST.get('feedid')
+        content = request.POST.get('content')
 
         try:
             user = User.objects.get(username=username)
@@ -756,12 +760,13 @@ def feed_comment(request):
 
     return HttpResponse(json.dumps(context_dict), content_type="application/json")
 
+@csrf_exempt
 def feed_like(request):
     context_dict = {}
 
-    if request.method == 'GET':
-        username = request.GET.get('username')
-        feedid = request.GET.get('feedid')
+    if request.method == 'POST':
+        username = request.POST.get('username')
+        feedid = request.POST.get('feedid')
 
         try:
             user = User.objects.get(username=username)
@@ -781,6 +786,7 @@ def feed_like(request):
                     feedlike = FeedLike.objects.create(feed=feed,user=user)
 
                     context_dict['success'] = 1
+                    context_dict['likesnumber'] = feed.likesnumber
             except ObjectDoesNotExist:
                 context_dict['success'] = 0
                 context_dict['error_message'] = 'Feed not exist.'
