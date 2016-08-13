@@ -1,4 +1,5 @@
 from django.shortcuts import render
+from iVR.forms import ImageUploadForm
 from django.core.exceptions import ObjectDoesNotExist
 from django.http import HttpResponseRedirect, HttpResponse
 from django.contrib.auth import authenticate
@@ -100,6 +101,38 @@ def user_detail(request):
             pass
 
     return HttpResponse(json.dumps(context_dict), content_type="application/json")
+
+@csrf_exempt
+def upload_profilephoto(request):
+   context_dict = {}
+
+   if request.method == 'POST':
+       form = ImageUploadForm(request.POST, request.FILES)
+       if form.is_valid():
+           username = form.cleaned_data['username']
+
+           try:
+               user = User.objects.get(username=username)
+               userProfile = UserProfile.objects.get(user=user)
+
+               userProfile.picture = form.cleaned_data['pic']
+               userProfile.save()
+
+               picture = getattr(userProfile, 'picture').url
+
+               context_dict['success'] = 1
+               context_dict['picture'] = picture
+           except ObjectDoesNotExist:
+               context_dict['success'] = 0
+               context_dict['error_message'] = 'User not exist.'
+       else:
+           context_dict['success'] = 0
+           context_dict['error_message'] = 'Invalid data.'
+   else:
+       context_dict['success'] = 0
+       context_dict['error_message'] = 'Request Error.'
+
+   return HttpResponse(json.dumps(context_dict), content_type="application/json")
 
 def news(request):
     news_list = News.objects.all().order_by('-id')

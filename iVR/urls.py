@@ -5,6 +5,7 @@ urlpatterns = [
     url(r'^register/',views.register,name='register'),
     url(r'^login/',views.login,name='login'),
     url(r'^user_detail/',views.user_detail,name='user_detail'),
+    url(r'^upload_profilephoto/',views.upload_profilephoto,name='upload_profilephoto'),
 
     url(r'^news/',views.news,name='news'),
     url(r'^news_detail/',views.news_detail,name='news_detail'),

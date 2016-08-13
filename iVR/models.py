@@ -18,7 +18,7 @@ class Feed(models.Model):
     content = models.TextField()
     likesnumber = models.IntegerField(default=0)
     commentsnumber = models.IntegerField(default=0)
-    picture = models.ImageField(upload_to='static/feeds_images')
+    picture = models.ImageField(upload_to='static/feeds_images', blank=True, default=' ')
 
     def __unicode__(self):
         return self.content
