@@ -29,6 +29,7 @@ urlpatterns = [
     url(r'^feed_detail/',views.feed_detail,name='feed_detail'),
     url(r'^feed_comment/',views.feed_comment,name='feed_comment'),
     url(r'^feed_like/',views.feed_like,name='feed_like'),
+    url(r'^feed_add/',views.feed_add,name='feed_add'),
 
     url(r'^follow/',views.follow,name='follow'),
     url(r'^followings/',views.followings,name='followings'),

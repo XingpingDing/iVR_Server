@@ -15,7 +15,7 @@ class UserProfile(models.Model):
 class Feed(models.Model):
     user = models.ForeignKey(User)
     date = models.DateTimeField(auto_now_add=True)
-    content = models.TextField()
+    content = models.CharField(max_length=200)
     likesnumber = models.IntegerField(default=0)
     commentsnumber = models.IntegerField(default=0)
     picture = models.ImageField(upload_to='static/feeds_images', blank=True, default=' ')

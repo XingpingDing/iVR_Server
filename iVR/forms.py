@@ -1,5 +1,10 @@
 from django import forms
 
 class ImageUploadForm(forms.Form):
-    pic = forms.ImageField()
     username = forms.CharField()
+    pic = forms.ImageField()
+
+class FeedAddForm(forms.Form):
+    username = forms.CharField()
+    content = forms.CharField()
+    pic = forms.ImageField()
