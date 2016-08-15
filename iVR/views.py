@@ -851,10 +851,13 @@ def feed_add(request):
    context_dict = {}
 
    if request.method == 'POST':
+
+       for key in request.POST:
+           print(key)
        # Check form type
        # if has filename, then type is text plus picture
        # otherwise type is text
-       if "filename" in request.POST:
+       if "isPic" in request.POST:
            form = FeedAddTextPlusPictureForm(request.POST, request.FILES)
            if form.is_valid():
                username = form.cleaned_data['username']
