@@ -1,5 +1,5 @@
 from django.shortcuts import render
-from iVR.forms import ImageUploadForm, FeedAddForm
+from iVR.forms import ImageUploadForm, FeedAddTextForm, FeedAddTextPlusPictureForm
 from django.core.exceptions import ObjectDoesNotExist
 from django.http import HttpResponseRedirect, HttpResponse
 from django.contrib.auth import authenticate
@@ -103,7 +103,7 @@ def user_detail(request):
     return HttpResponse(json.dumps(context_dict), content_type="application/json")
 
 @csrf_exempt
-def upload_profilephoto(request):
+def upload_profilepicture(request):
    context_dict = {}
 
    if request.method == 'POST':
@@ -851,24 +851,45 @@ def feed_add(request):
    context_dict = {}
 
    if request.method == 'POST':
-       form = FeedAddForm(request.POST, request.FILES)
-       if form.is_valid():
-           username = form.cleaned_data['username']
+       # Check form type
+       # if has filename, then type is text plus picture
+       # otherwise type is text
+       if "filename" in request.POST:
+           form = FeedAddTextPlusPictureForm(request.POST, request.FILES)
+           if form.is_valid():
+               username = form.cleaned_data['username']
 
-           try:
-               user = User.objects.get(username=username)
-               content = form.cleaned_data['content']
-               picture = form.cleaned_data['pic']
+               try:
+                   user = User.objects.get(username=username)
+                   content = form.cleaned_data['content']
+                   picture = form.cleaned_data['pic']
 
-               feed = Feed.objects.create(user=user,content=content,picture=picture)
-
-               context_dict['success'] = 1
-           except ObjectDoesNotExist:
+                   feed = Feed.objects.create(user=user,content=content,picture=picture)
+                   context_dict['success'] = 1
+               except ObjectDoesNotExist:
+                   context_dict['success'] = 0
+                   context_dict['error_message'] = 'User not exist.'
+           else:
                context_dict['success'] = 0
-               context_dict['error_message'] = 'User not exist.'
+               context_dict['error_message'] = 'Invalid data.'
        else:
-           context_dict['success'] = 0
-           context_dict['error_message'] = 'Invalid data.'
+           form = FeedAddTextForm(request.POST, request.FILES)
+           if form.is_valid():
+               username = form.cleaned_data['username']
+
+               try:
+                   user = User.objects.get(username=username)
+                   content = form.cleaned_data['content']
+
+                   feed = Feed.objects.create(user=user,content=content)
+                   context_dict['success'] = 1
+               except ObjectDoesNotExist:
+                   context_dict['success'] = 0
+                   context_dict['error_message'] = 'User not exist.'
+           else:
+               context_dict['success'] = 0
+               context_dict['error_message'] = 'Invalid data.'
+
    else:
        context_dict['success'] = 0
        context_dict['error_message'] = 'Request Error.'
