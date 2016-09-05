@@ -8,6 +8,7 @@ from iVR.models import FeedLike, FeedComment, NewsComment, DeviceReview, VideoRe
 from django.views.decorators.csrf import csrf_exempt
 import json
 
+# User register
 @csrf_exempt
 def register(request):
     context_dict = {}
@@ -17,6 +18,7 @@ def register(request):
         password = request.POST.get('password')
 
         if username and password:
+            # Check whether user is exist
             try:
                 user = User.objects.get(username=username)
 
@@ -24,6 +26,7 @@ def register(request):
                 context_dict['error_message'] = 'User already exists.'
 
             except ObjectDoesNotExist:
+                # Save user to database
                 user = User.objects.create(username=username)
                 user.set_password(password)
                 user.save()
@@ -39,6 +42,7 @@ def register(request):
 
     return HttpResponse(json.dumps(context_dict), content_type="application/json")
 
+# User login
 @csrf_exempt
 def login(request):
     context_dict = {}
@@ -47,6 +51,7 @@ def login(request):
         username = request.POST.get('username')
         password = request.POST.get('password')
 
+        # Check whether user is valid
         user = authenticate(username=username, password=password)
 
         if user:
@@ -74,6 +79,7 @@ def login(request):
 
     return HttpResponse(json.dumps(context_dict), content_type="application/json")
 
+# Get user detail information
 def user_detail(request):
     context_dict = {}
 
@@ -102,15 +108,18 @@ def user_detail(request):
 
     return HttpResponse(json.dumps(context_dict), content_type="application/json")
 
+# Upload profile picture
 @csrf_exempt
 def upload_profilepicture(request):
    context_dict = {}
 
    if request.method == 'POST':
+       # Data from ImageUploadForm
        form = ImageUploadForm(request.POST, request.FILES)
        if form.is_valid():
            username = form.cleaned_data['username']
 
+           # If user exists, then update profile picture
            try:
                user = User.objects.get(username=username)
                userProfile = UserProfile.objects.get(user=user)
@@ -134,6 +143,7 @@ def upload_profilepicture(request):
 
    return HttpResponse(json.dumps(context_dict), content_type="application/json")
 
+# Get news list
 def news(request):
     news_list = News.objects.all().order_by('-id')
 
@@ -158,6 +168,7 @@ def news(request):
 
     return HttpResponse(json.dumps(context_dict), content_type="application/json")
 
+# Get news detail of a specific piece of news
 def news_detail(request):
     context_dict = {}
 
@@ -179,6 +190,7 @@ def news_detail(request):
 
             context_dict['news'] = news_dict
 
+            # Get comment list
             comment_list = NewsComment.objects.filter(news=news).order_by('-id')
             comments = []
 
@@ -210,6 +222,7 @@ def news_detail(request):
 
     return HttpResponse(json.dumps(context_dict), content_type="application/json")
 
+# comment on a piece of news
 @csrf_exempt
 def news_comment(request):
     context_dict = {}
@@ -222,6 +235,8 @@ def news_comment(request):
         try:
             user = User.objects.get(username=username)
 
+            # Check whteher news exist
+            # if news exist, then save comment to database
             try:
                 news = News.objects.get(id=newsid)
 
@@ -245,6 +260,7 @@ def news_comment(request):
 
     return HttpResponse(json.dumps(context_dict), content_type="application/json")
 
+# Get device list
 def devices(request):
     devices_list = Device.objects.all().order_by('-id')
 
@@ -271,6 +287,7 @@ def devices(request):
 
     return HttpResponse(json.dumps(context_dict), content_type="application/json")
 
+# Get detail of a specific device
 def device_detail(request):
     context_dict = {}
 
@@ -294,6 +311,7 @@ def device_detail(request):
 
             context_dict['device'] = device_dict
 
+            # Get review list of this device
             review_list = DeviceReview.objects.filter(device=device).order_by('-id')
             reviews = []
 
@@ -327,6 +345,7 @@ def device_detail(request):
 
     return HttpResponse(json.dumps(context_dict), content_type="application/json")
 
+# Review on a device
 @csrf_exempt
 def device_review(request):
     context_dict = {}
@@ -343,6 +362,7 @@ def device_review(request):
             try:
                 device = Device.objects.get(id=deviceid)
 
+                # Caculate average score of this device
                 device.score = (device.score * device.reviewsnumber + score) / (device.reviewsnumber + 1)
                 device.reviewsnumber = device.reviewsnumber + 1
                 device.save()
@@ -364,6 +384,7 @@ def device_review(request):
 
     return HttpResponse(json.dumps(context_dict), content_type="application/json")
 
+# Search for a device
 def device_search(request):
     context_dict = {}
 
@@ -371,6 +392,7 @@ def device_search(request):
 
     list = []
     if searchcontent:
+        # Get the device list whose name contain search content
         devices_list = Device.objects.filter(name__icontains=searchcontent)
 
         for ob in devices_list:
@@ -392,6 +414,7 @@ def device_search(request):
 
     return HttpResponse(json.dumps(context_dict), content_type="application/json")
 
+# Get game list
 def games(request):
     games_list = Game.objects.all().order_by('-id')
 
@@ -418,6 +441,7 @@ def games(request):
 
     return HttpResponse(json.dumps(context_dict), content_type="application/json")
 
+# Get detail of a specific game
 def game_detail(request):
     context_dict = {}
 
@@ -474,6 +498,7 @@ def game_detail(request):
 
     return HttpResponse(json.dumps(context_dict), content_type="application/json")
 
+# Review on a game
 @csrf_exempt
 def game_review(request):
     context_dict = {}
@@ -511,6 +536,7 @@ def game_review(request):
 
     return HttpResponse(json.dumps(context_dict), content_type="application/json")
 
+# Get video list
 def videos(request):
     videos_list = Video.objects.all().order_by('-id')
 
@@ -537,6 +563,7 @@ def videos(request):
 
     return HttpResponse(json.dumps(context_dict), content_type="application/json")
 
+# Get detail of a specific video
 def video_detail(request):
     context_dict = {}
 
@@ -593,6 +620,7 @@ def video_detail(request):
 
     return HttpResponse(json.dumps(context_dict), content_type="application/json")
 
+# Review on a video
 @csrf_exempt
 def video_review(request):
     context_dict = {}
@@ -630,6 +658,7 @@ def video_review(request):
 
     return HttpResponse(json.dumps(context_dict), content_type="application/json")
 
+# Get feed list
 def feeds(request):
     context_dict = {}
 
@@ -670,6 +699,7 @@ def feeds(request):
 
     return HttpResponse(json.dumps(context_dict), content_type="application/json")
 
+# Get feed list which posted by the users your are following
 def feeds_following(request):
     context_dict = {}
 
@@ -712,6 +742,7 @@ def feeds_following(request):
 
     return HttpResponse(json.dumps(context_dict), content_type="application/json")
 
+# Get detail of a specific feed
 def feed_detail(request):
     context_dict = {}
 
@@ -770,6 +801,7 @@ def feed_detail(request):
 
     return HttpResponse(json.dumps(context_dict), content_type="application/json")
 
+# Comment on feed
 @csrf_exempt
 def feed_comment(request):
     context_dict = {}
@@ -805,6 +837,7 @@ def feed_comment(request):
 
     return HttpResponse(json.dumps(context_dict), content_type="application/json")
 
+# Like a feed
 @csrf_exempt
 def feed_like(request):
     context_dict = {}
@@ -819,6 +852,7 @@ def feed_like(request):
             try:
                 feed = Feed.objects.get(id=feedid)
 
+                # Check whether already liked this feed
                 try:
                     feedlike = FeedLike.objects.get(feed=feed,user=user)
 
@@ -846,6 +880,7 @@ def feed_like(request):
 
     return HttpResponse(json.dumps(context_dict), content_type="application/json")
 
+# Add a feed
 @csrf_exempt
 def feed_add(request):
    context_dict = {}
@@ -899,6 +934,7 @@ def feed_add(request):
 
    return HttpResponse(json.dumps(context_dict), content_type="application/json")
 
+# Follow a user
 @csrf_exempt
 def follow(request):
     context_dict = {}
@@ -936,6 +972,7 @@ def follow(request):
 
     return HttpResponse(json.dumps(context_dict), content_type="application/json")
 
+# Get the user list that you are following
 def followings(request):
     context_dict = {}
 
@@ -973,6 +1010,7 @@ def followings(request):
 
     return HttpResponse(json.dumps(context_dict), content_type="application/json")
 
+# Get the user list that following you
 def followers(request):
     context_dict = {}
 

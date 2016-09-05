@@ -5,6 +5,7 @@ from django.contrib.auth.models import User
 
 import json
 
+# User profile object
 class UserProfile(models.Model):
     user = models.OneToOneField(User)
     picture = models.ImageField(upload_to='static/profile_images', blank=True, default='static/profile_images/ivr.png')
@@ -12,6 +13,7 @@ class UserProfile(models.Model):
     def __unicode__(self):
         return self.user.username
 
+# Feed object
 class Feed(models.Model):
     user = models.ForeignKey(User)
     date = models.DateTimeField(auto_now_add=True)
@@ -23,6 +25,7 @@ class Feed(models.Model):
     def __unicode__(self):
         return self.content
 
+# News object
 class News(models.Model):
     title = models.CharField(max_length=50)
     date = models.DateTimeField(auto_now_add=True)
@@ -37,6 +40,7 @@ class News(models.Model):
     def __unicode__(self):
         return self.title
 
+# Device object
 class Device(models.Model):
     name = models.CharField(max_length=30)
     price = models.FloatField(default=0)
@@ -52,6 +56,7 @@ class Device(models.Model):
     def __unicode__(self):
         return self.name
 
+# Video object
 class Video(models.Model):
     title = models.CharField(max_length=30)
     author = models.CharField(max_length=30)
@@ -66,6 +71,7 @@ class Video(models.Model):
     def __unicode__(self):
         return self.title
 
+# Game object
 class Game(models.Model):
     name = models.CharField(max_length=30)
     price = models.FloatField(default=0)
@@ -81,6 +87,7 @@ class Game(models.Model):
     def __unicode__(self):
         return self.name
 
+# FeedLike object
 class FeedLike(models.Model):
     feed = models.ForeignKey(Feed)
     user = models.ForeignKey(User)
@@ -89,6 +96,7 @@ class FeedLike(models.Model):
     def __unicode__(self):
         return self.feed.content
 
+# FeedComment object
 class FeedComment(models.Model):
     feed = models.ForeignKey(Feed)
     user = models.ForeignKey(User)
@@ -98,6 +106,7 @@ class FeedComment(models.Model):
     def __unicode__(self):
         return self.content
 
+# NewsComment object
 class NewsComment(models.Model):
     news = models.ForeignKey(News)
     user = models.ForeignKey(User)
@@ -117,6 +126,7 @@ class DeviceReview(models.Model):
     def __unicode__(self):
         return self.content
 
+# VideoReview object
 class VideoReview(models.Model):
     video = models.ForeignKey(Video)
     user = models.ForeignKey(User)
@@ -127,6 +137,7 @@ class VideoReview(models.Model):
     def __unicode__(self):
         return self.content
 
+# GameReview object
 class GameReview(models.Model):
     game = models.ForeignKey(Game)
     user = models.ForeignKey(User)
@@ -137,6 +148,7 @@ class GameReview(models.Model):
     def __unicode__(self):
         return self.content
 
+# Follow object
 class Follow(models.Model):
     user = models.ForeignKey(User, related_name='follow_user')
     followeduser = models.ForeignKey(User, related_name='followed_user')
