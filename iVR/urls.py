@@ -34,7 +34,4 @@ urlpatterns = [
     url(r'^follow/',views.follow,name='follow'),
     url(r'^followings/',views.followings,name='followings'),
     url(r'^followers/',views.followers,name='followers'),
-
-    url(r'^predicted/',views.predicted,name='predicted'),
-    url(r'^statistics/',views.statistics,name='statistics'),
 ]
